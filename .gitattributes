@@ -1,0 +1,4 @@
+# Foundry LevelDB compendium packs are binary; never apply text/EOL conversion.
+packs/** binary
+*.ldb binary
+*.db binary
