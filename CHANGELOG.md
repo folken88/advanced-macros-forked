@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.3
+
+### Fixed
+- **`/macroname` still failed on v13/v14 because the ProseMirror chat input serializes input to HTML** (e.g. `"<p>/per</p>"`). The handler tested `startsWith("/")` against that raw markup and bailed. It now extracts the plain text (`textContent`) first, so `/per` is detected and routed to the macro. This was the real cause of the "not a valid chat message command" error; 2.3.2 fixed the `MESSAGE_PATTERNS` issue but not this one.
+
 ## 2.3.2
 
 ### Fixed

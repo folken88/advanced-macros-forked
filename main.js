@@ -1,5 +1,5 @@
 const MODULE_ID = "advanced-macros-forked";
-const MODULE_VERSION = "2.3.2";
+const MODULE_VERSION = "2.3.3";
 
 /**
  * Resolve the ChatLog application class across Foundry versions.
@@ -115,16 +115,23 @@ Hooks.on("chatMessage", (chatLog, message, chatData) => {
 	try {
 		if (!game.settings.get("advanced-macros-forked", "legacySlashCommand")) return true;
 		const raw = typeof message === "string" ? message : "";
-		const trimmed = raw.trim();
-		// Not a slash command (or raw HTML) — let core handle it.
-		if (!trimmed.startsWith("/")) return true;
+		// The v13+ ProseMirror chat input serializes plain input to HTML (e.g. "<p>/per</p>").
+		// Extract the plain text so slash detection and macro-name parsing see "/per", not the markup.
+		let text = raw;
+		try {
+			const div = document.createElement("div");
+			div.innerHTML = raw;
+			text = div.textContent ?? raw;
+		} catch (_) { /* fall back to the raw string */ }
+		text = text.trim();
+		if (!text.startsWith("/")) return true;
 
 		// If core recognizes this as a real command (roll, whisper, macro, …), don't interfere.
-		const command = parseCommand(raw);
+		const command = parseCommand(text);
 		if (command !== "invalid" && command !== "none") return true;
 
 		// Unrecognized "/command": try to resolve a macro by name, supporting multi-word names.
-		const parts = trimmed.slice(1).split(" ");
+		const parts = text.slice(1).split(/\s+/);
 		let macroName = parts[0];
 		let macro = game.macros.getName(macroName);
 		for (const token of parts.slice(1)) {
